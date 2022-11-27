@@ -1,0 +1,13 @@
+#define WIFI_SSID "your wifi"
+#define WIFI_PASSWORD "your password"
+#define HOSTNAME "fingerprint"
+#define MqttBroker "mqtt IP"
+#define MqttPort 1883
+#define SERIAL_SPEED 9600
+#define OTA_HASH "MD5 hash for OTA"
+
+#define REGISTER_NEW_FINGER_SECONDS 10 //how long does admin finger need to be on sensor to add new finger
+#define DELETE_ALL_FINGER_SECONDS 20 //how long does admin finger need to be on sensor to delete all fingers
+#define SENSOR_PASSWORD "32bit NUMBER FOR PASSWORD"
+#define OPEN_DOOR_API_CALL "URL TO CALL, e.g. NUKI API"
+#define FIRST_BOOT true //set to false after first boot!
