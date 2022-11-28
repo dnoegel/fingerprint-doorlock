@@ -1,14 +1,11 @@
 /*
- * Based on the Adafruit Fingrerprint example s
- * - https://github.com/adafruit/Adafruit-Fingerprint-Sensor-Library/blob/master/examples/fingerprint/fingerprint.ino
- * - https://github.com/adafruit/Adafruit-Fingerprint-Sensor-Library/blob/master/examples/emptyDatabase/emptyDatabase.ino
- * - https://github.com/adafruit/Adafruit-Fingerprint-Sensor-Library/blob/master/examples/enroll/enroll.ino
- * 
- * Shoutout to youtube.com/ModItBetter who made good efforts to combine those examples into one sketch that can be controlled soley via the sensor
- */
- 
- 
+   Based on the Adafruit Fingrerprint example s
+   - https://github.com/adafruit/Adafruit-Fingerprint-Sensor-Library/blob/master/examples/fingerprint/fingerprint.ino
+   - https://github.com/adafruit/Adafruit-Fingerprint-Sensor-Library/blob/master/examples/emptyDatabase/emptyDatabase.ino
+   - https://github.com/adafruit/Adafruit-Fingerprint-Sensor-Library/blob/master/examples/enroll/enroll.ino
 
+   Shoutout to youtube.com/ModItBetter who made good efforts to combine those examples into one sketch that can be controlled soley via the sensor
+*/
 
 #include "Setup.h"
 #include <PubSubClient.h>
@@ -33,9 +30,6 @@ int adminFingerSeconds = 0;
 String ip;
 char charBuf[40];
 
-
-
-
 void setup()
 {
   Serial.begin(SERIAL_SPEED);
@@ -54,15 +48,14 @@ void setup()
   setupMqtt();
 }
 
-
-
 void loop()
 {
+  ensureWifiConnected();
   loopMqtt();
   loopWebUpdater();
 
   if (noFingerSeconds == 3)  {
-    if (adminFingerSeconds >= REGISTER_NEW_FINGER_SECONDS && adminFingerSeconds <= (DELETE_ALL_FINGER_SECONDS-2)) {
+    if (adminFingerSeconds >= REGISTER_NEW_FINGER_SECONDS && adminFingerSeconds <= (DELETE_ALL_FINGER_SECONDS - 2)) {
       registerNewFingerprint();
     }
     if (adminFingerSeconds >= DELETE_ALL_FINGER_SECONDS ) {
@@ -77,7 +70,13 @@ void loop()
 
   // door opening only for non-admin fingers
   if (p > 1) {
-    openDoor(p);
+    client.publish("mqtt.0.fingerprint.last_seen_finger", itoa(p, charBuf, 10));
+    client.publish("mqtt.0.fingerprint.last_seen_confidence", itoa(finger.confidence, charBuf, 10));
+    if (finger.confidence > 50) {
+      client.publish("mqtt.0.fingerprint.last_open_finger", itoa(p, charBuf, 10));
+      openDoor(p);
+    }
+
   }
 
   delay(1000);
@@ -88,8 +87,7 @@ void loop()
 void openDoor(int p)
 {
   Serial.println("== OPENING DOOR ==");
-  Serial.print("Finger ID: ");
-  Serial.println(p);
+  Serial.print("Finger ID: "); Serial.println(p);
 
   http.begin(OPEN_DOOR_API_CALL);
   int httpCode = http.GET();
@@ -98,9 +96,7 @@ void openDoor(int p)
     String payload = http.getString();
     Serial.println(httpCode);
     Serial.println(payload);
-  }
-
-  else {
+  } else {
     Serial.println("Error on HTTP request");
   }
 
