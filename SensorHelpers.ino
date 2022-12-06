@@ -7,22 +7,26 @@ void setupFingerPrintSensor()
   // fixed it in my case
   mySerial.begin(57600, SERIAL_8N1, 17, 16);
 
-  if (finger.verifyPassword()) {
-    Serial.println("Found fingerprint sensor!");
-  } else {
-    Serial.println("Did not find fingerprint sensor :(");
-    while (true);
-  }
-
+#if(FIRST_BOOT)
   Serial.print("Setting password... ");
   uint8_t p = finger.setPassword(SENSOR_PASSWORD);
   if (p == FINGERPRINT_OK) {
-    Serial.println("Password set"); // Password is set
+    Serial.println("Password set."); // Password is set
+    Serial.println("Please set FIRST_BOOT to false, compile & upload again");
   } else {
     Serial.println("error setting password"); // Failed to set password
     while(true);
   }
+#endif 
 
+  if (finger.verifyPassword()) {
+    Serial.println("Found fingerprint sensor!");
+  } else {
+    Serial.println("Did not find fingerprint sensor :(.");
+    Serial.println("Could also indicate that (a) password is wrong or (b) FIRST_BOOT is set to the wrong value");
+    while (true);
+  }
+  
   finger.getTemplateCount();
   if (finger.templateCount == 0) {
     Serial.print("Sensor doesn't contain any fingerprint Going to run 'enroll.");
@@ -37,6 +41,7 @@ void setupFingerPrintSensor()
   }
 }
 
+// Step 1: Get image of finger
 uint8_t getFingerImage()
 {
   uint8_t p = finger.getImage();
@@ -59,7 +64,7 @@ uint8_t getFingerImage()
   }
 }
 
-
+// Step 2: Generate feature template from image
 uint8_t getFeatureTemplate(int slot)
 {
 
@@ -90,7 +95,7 @@ uint8_t getFeatureTemplate(int slot)
   }
 }
 
-
+// Step 3: Search for a finger based on a feature template
 uint8_t searchFinger()
 {
   uint8_t p = finger.fingerSearch();
@@ -111,6 +116,7 @@ uint8_t searchFinger()
     return p;
   }
 }
+
 
 uint8_t createModel()
 {
@@ -150,6 +156,7 @@ uint8_t storeModel(int id)
     return s;
   }
 }
+
 
 void waitForFingerToBeRemovedAndPlacedAgain()
 {

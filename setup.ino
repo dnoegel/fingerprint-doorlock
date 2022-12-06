@@ -1,10 +1,7 @@
 
 /*
-
-   WIFI
-
-*/
-
+ * WIFI
+ */
 void ensureWifiConnected()
 {
   if ((WiFi.status() != WL_CONNECTED) ) {
@@ -30,12 +27,9 @@ void ensureWifiConnected()
 
 }
 
-/**
-
-   MQTT
-
-*/
-
+/*
+ * MQTT
+ */
 void setupMqtt()
 {
   client.setServer(MqttBroker, MqttPort);
@@ -81,11 +75,8 @@ void loopMqtt() {
 }
 
 /*
-
-   Web Updater
-
-*/
-
+ * Web Updater
+ */
 #include <ESPmDNS.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>

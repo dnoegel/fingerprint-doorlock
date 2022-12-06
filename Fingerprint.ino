@@ -25,8 +25,8 @@ Adafruit_Fingerprint finger = Adafruit_Fingerprint(&mySerial, SENSOR_PASSWORD);
 #endif
 
 uint8_t id;
-int noFingerSeconds = 0;
-int adminFingerSeconds = 0;
+int noFingerTicks = 0;
+int adminFingerTicks = 0;
 String ip;
 char charBuf[40];
 
@@ -54,16 +54,16 @@ void loop()
   loopMqtt();
   loopWebUpdater();
 
-  if (noFingerSeconds == 3)  {
-    if (adminFingerSeconds >= REGISTER_NEW_FINGER_SECONDS && adminFingerSeconds <= (DELETE_ALL_FINGER_SECONDS - 2)) {
+  if (noFingerTicks == toTicks(3))  {
+    if (adminFingerTicks >= toTicks(REGISTER_NEW_FINGER_SECONDS) && adminFingerTicks <= (toTicks(DELETE_ALL_FINGER_SECONDS - 2))) {
       registerNewFingerprint();
     }
-    if (adminFingerSeconds >= DELETE_ALL_FINGER_SECONDS ) {
+    if (adminFingerTicks >= toTicks(DELETE_ALL_FINGER_SECONDS)) {
       deleteAllFingerprints();
     }
 
-    noFingerSeconds = 0;
-    adminFingerSeconds = 1;
+    noFingerTicks = 0;
+    adminFingerTicks = 1;
   }
 
   int p = readFingerPrints();
@@ -79,9 +79,15 @@ void loop()
 
   }
 
-  delay(1000);
-  noFingerSeconds += 1;
-  Serial.print("No Finger Seconds: "); Serial.println(noFingerSeconds);
+  delay(1000/CHECKS_PER_SECOND);
+  
+  noFingerTicks += 1;
+  Serial.print("No Finger Seconds: "); Serial.println(noFingerTicks);
+}
+
+int toTicks(int seconds)
+{
+  return seconds * CHECKS_PER_SECOND;
 }
 
 void openDoor(int p)
@@ -122,25 +128,24 @@ uint8_t readFingerPrints() {
 
 void handleAdminFinger()
 {
-
   if (finger.fingerID == 1) {
-    adminFingerSeconds += 1;
-    noFingerSeconds = 0;
+    adminFingerTicks += 1;
+    noFingerTicks = 0;
 
-    if (adminFingerSeconds == REGISTER_NEW_FINGER_SECONDS) {
+    if (adminFingerTicks == toTicks(REGISTER_NEW_FINGER_SECONDS)) {
       Serial.print("Release finger to trigger new user creation");
       finger.LEDcontrol(FINGERPRINT_LED_ON, 0, FINGERPRINT_LED_RED);
       delay (1000);
     }
 
-    if (adminFingerSeconds >= 20) {
+    if (adminFingerTicks >= toTicks(DELETE_ALL_FINGER_SECONDS)) {
       Serial.println("Release finger to trigger deletion of all records");
       finger.LEDcontrol(FINGERPRINT_LED_ON, 0, FINGERPRINT_LED_PURPLE);
       delay (1000);
     }
 
     Serial.print("Admin finger seconds: ");
-    Serial.println(adminFingerSeconds);
+    Serial.println(adminFingerTicks);
 
   }
 }
