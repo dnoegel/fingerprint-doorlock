@@ -8,6 +8,20 @@ Worth mentioning features:
 - OTAUpdater
 - MQTT connection for e.g. monitoring of the device
 
+For more details and pictures please checkout the blog post about [opening my front door with my fingerprint](https://noegel.io/posts/2022-12-07-fingerprint-doorlock/).
+
+## Wiring
+Wiring is quite easy:
+
+
+| R503 Pin          | R503 Description | ESP 32 Pin |
+|:------------------|-----------------:|-----------:|
+| 1 (red)           | DC 3.3V          | 3.3V       |
+| 2 (black)         | Ground           | Ground     |
+| 3 (yellow)        | TXD, Output      | P17        |
+| 4 (brown or green) | RXD, Input       | P16       |
+
+![](data/board.jpeg)
 
 ## Setup
 Rename `Setup.h.orig` to `Setup.h` and configure as needed/described in that file.

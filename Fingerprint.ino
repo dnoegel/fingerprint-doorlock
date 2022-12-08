@@ -54,11 +54,22 @@ void loop()
   loopMqtt();
   loopWebUpdater();
 
-  if (noFingerTicks == toTicks(3))  {
-    if (adminFingerTicks >= toTicks(REGISTER_NEW_FINGER_SECONDS) && adminFingerTicks <= (toTicks(DELETE_ALL_FINGER_SECONDS - 2))) {
+  /* The "tick" system needs to be reconsidered:
+   * If no finger is being checked, a tick is mainly determined by the "main delay" in this loop, e.g. 250ms
+   * 
+   * If a finger is being checked, however, a tick is determined by the amount of time scanning the finger + 
+   * processing the feature template takes. Which could be a second.
+   * 
+   * Therefore: 
+   *  - noFingerTicks are 1000/CHECKS_PER_SECOND ms
+   *  - adminFingerTicks are the time the finger print reader needs - roughly 1 second
+   * 
+  */
+  if (noFingerTicks >= toTicks(3))  {
+    if (adminFingerTicks >= REGISTER_NEW_FINGER_SECONDS && adminFingerTicks <= (DELETE_ALL_FINGER_SECONDS - 2)) {
       registerNewFingerprint();
     }
-    if (adminFingerTicks >= toTicks(DELETE_ALL_FINGER_SECONDS)) {
+    if (adminFingerTicks >= DELETE_ALL_FINGER_SECONDS) {
       deleteAllFingerprints();
     }
 
@@ -132,13 +143,13 @@ void handleAdminFinger()
     adminFingerTicks += 1;
     noFingerTicks = 0;
 
-    if (adminFingerTicks == toTicks(REGISTER_NEW_FINGER_SECONDS)) {
+    if (adminFingerTicks == REGISTER_NEW_FINGER_SECONDS) {
       Serial.print("Release finger to trigger new user creation");
       finger.LEDcontrol(FINGERPRINT_LED_ON, 0, FINGERPRINT_LED_RED);
       delay (1000);
     }
 
-    if (adminFingerTicks >= toTicks(DELETE_ALL_FINGER_SECONDS)) {
+    if (adminFingerTicks >= DELETE_ALL_FINGER_SECONDS) {
       Serial.println("Release finger to trigger deletion of all records");
       finger.LEDcontrol(FINGERPRINT_LED_ON, 0, FINGERPRINT_LED_PURPLE);
       delay (1000);
